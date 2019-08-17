@@ -1,0 +1,6 @@
+.env
+vendor
+composer.lock
+config/accesspoints.yaml
+public/data/*.json
+public/old_unifi.php

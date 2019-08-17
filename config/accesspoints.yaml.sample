@@ -1,0 +1,7 @@
+SERIAL:
+  name: "AccessPoint Name"
+  position:
+    lat: 50.03523
+    long: 9.934523
+  owner: "my@emaildomain.de"
+  firstseen: '2019-12-30'
