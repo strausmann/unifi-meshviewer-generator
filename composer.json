@@ -2,6 +2,7 @@
     "name": "ispserverfarm/unifi-meshviewer-generator",
     "description" : "Der Meshviewer Generator erzeugt die erforderlichen JSON Files zur Einbindung von Unifi AccessPoints, die mit der Stock Firmware über den Unifi Controller verwaltet werden. Der Generator holt mittels API die entsprechenden Daten vom Unifi Controller",
     "type": "library",
+    "license": "MIT",
     "keywords": [
         "ubnt",
         "ubiquiti",
@@ -14,11 +15,12 @@
         "json"
     ],
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.6.0",
         "ext-curl": "*",
         "ext-yaml": "*",
         "art-of-wifi/unifi-api-client": "^1.1",
-        "vlucas/phpdotenv": "^3.4"
+        "vlucas/phpdotenv": "^3.4",
+        "composer/composer": "^1.9"
     },
     "require-dev": {
         "filp/whoops": "^2.5",
@@ -36,11 +38,23 @@
             "ISPServerfarm\\UnifiMeshviewer\\": "tests/"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
     "authors": [
         {
             "name": "Bjoern Strausmann",
             "email": "bjoern@strausmann.net",
             "homepage": "https://www.isp-serverfarm.de"
         }
-    ]
+    ],
+    "scripts": {
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ]
+    }
 }
