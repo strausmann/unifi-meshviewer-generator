@@ -1,0 +1,2 @@
+Header always set Access-Control-Allow-Origin "*"
+Allow from all

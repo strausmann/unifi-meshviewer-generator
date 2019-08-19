@@ -93,15 +93,14 @@ class MeshviewerGenerator{
     private function getDevices(){
         $this->login();
         return $this->alldevices = $this->client->list_devices();
-
-        print_r ($this->alldevices);
     }
 
     private function getAccessPoints(){
         $this->getDevices();
         foreach ($this->alldevices as $device) {
             if ($device->type === 'uap'){
-                #print_r($device);
+                $this->writeDeviceCache($device);
+                $this->writeDeviceFile($device);
                 $this->allaccesspoints[$device->serial] = $device;
             }
         }
@@ -113,6 +112,11 @@ class MeshviewerGenerator{
             $this->getAccessPoints();
         }
         return $this->allaccesspoints;
+    }
+
+    public function getAccessPointBySerial(string $serial){
+        $tmp = $this->getAllAccessPoints();
+        return $tmp[$serial];
     }
 
     private function getModel($model){
@@ -144,25 +148,28 @@ class MeshviewerGenerator{
         $devices = $this->getAllAccessPoints();
         $return = [];
         foreach ($devices as $device) {
-            $ap_metadata = $this->getAccessPointMetaDataBySerial($device->serial);
+            $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
             if ($ap_metadata){
                 $node = [];
                 $node['id'] = $device->serial;
                 $node['name'] = $ap_metadata['name'];
-                $node['position']['lat'] = $ap_metadata['position']['lat'];
-                $node['position']['long'] = $ap_metadata['position']['long'];
+                if (!is_null($ap_metadata['position']['lat']) and !is_null($ap_metadata['position']['long'])){
+                    $node['position']['lat'] = $ap_metadata['position']['lat'];
+                    $node['position']['long'] = $ap_metadata['position']['long'];
+                }
                 if ($device->state == 1){
                     $node['status']['online'] = true;
+                    $node['status']['lastcontact'] = date(DATE_ISO8601,$device->last_seen);
                 } else {
                     $node['status']['online'] = false;
+                    $node['status']['lastcontact'] = $ap_metadata['last_seen'];
                 }
-                $node['status']['lastcontact'] = date(DATE_ISO8601,$device->last_seen);
                 $node['status']['clients'] = $device->num_sta;
                 $return[] = $node;
                 unset($node);
             }
         }
-        $return[] = $this->buildGatewayNodeForNodelist();
+        #$return[] = $this->buildGatewayNodeForNodelist();
         return $return;
     }
 
@@ -170,7 +177,8 @@ class MeshviewerGenerator{
         $devices = $this->getAllAccessPoints();
         $return = [];
         foreach ($devices as $device) {
-            $ap_metadata = $this->getAccessPointMetaDataBySerial($device->serial);
+            $this->addLink($device);
+            $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
             if (isset($ap_metadata['name'])){
                 $name = $ap_metadata['name'];
             } elseif (isset($device->name)) {
@@ -178,59 +186,61 @@ class MeshviewerGenerator{
             } else {
                 $name = "Unnamed";
             }
-            $stats = $device->stat;
             $node = [];
-            $node['firstseen'] = $stats->datetime;
-            $node['lastseen'] = date(DATE_ISO8601);
-            if ($device->state == 1) {
-                $node['is_online'] = true;
-            } else {
-                $node['is_online'] = false;
-            }
-            $node['is_gateway'] = false;
             if ($device->state == 1){
+                $stats = $device->stat;
                 $radio_stats = (array) $device->radio_table_stats;
                 $radio_stat0 = $radio_stats[0];
                 $radio_stat1 = $radio_stats[1];
+                $node['firstseen'] = $ap_metadata['first_seen'];
+                $node['lastseen'] = date(DATE_ISO8601, $device->last_seen);
+                $node['is_online'] = true;
+                $node['is_gateway'] = false;
                 $node['clients'] = $device->num_sta;
                 $node['clients_wifi24'] = $radio_stat0->num_sta;
                 $node['clients_wifi5'] = $radio_stat1->num_sta;
                 $node['clients_other'] = 0;
+
                 $stats = $device->sys_stats;
-                $node['loadavg'] = $stats->loadavg_1;
+                $avg = $stats->loadavg_1;
+                $node['loadavg'] = floatval($avg);
                 $node['memory_usage'] = $stats->mem_used/$stats->mem_total;
-                $node['uptime'] = date(DATE_ISO8601,time()-$device->uptime);
-                $this->addLink($device);
             } else {
+                $node['firstseen'] = $ap_metadata['first_seen'];
+                $node['lastseen'] = $ap_metadata['last_seen'];
+                $node['is_online'] = false;
+                $node['is_gateway'] = false;
                 $node['clients'] = 0;
                 $node['clients_wifi24'] = 0;
                 $node['clients_wifi5'] = 0;
                 $node['clients_other'] = 0;
                 $node['loadavg'] = 0;
                 $node['memory_usage'] = 0;
-                $node['uptime'] = date(DATE_ISO8601,0);
             }
-            $node['gateway_nexthop'] = getenv('GATEWAY_ID');
-            $node['gateway'] = getenv('GATEWAY_ID');
-            $node['node_id'] = strtolower($device->serial);
-            $node['mac'] = $device->mac;
-            $node['addresses'] = [$device->ip];
-            $node['site_code'] = getenv('FREIFUNK_SITEID');
-            $node['hostname'] = $name;
-            $node['owner'] = $ap_metadata['owner'];
-            $node['location']['longitude'] = $ap_metadata['position']['long'];
-            $node['location']['latitude'] = $ap_metadata['position']['lat'];
-
-            $node['firmware']['base'] = 'Ubiquiti Networks';
-            $node['autoupdater']['enabled'] = false;
-            $node['autoupdater']['release'] = $device->version;
+            $node['uptime']             = $ap_metadata['uptime'];
+            $node['gateway_nexthop']    = getenv('GATEWAY_ID');
+            $node['gateway']            = getenv('GATEWAY_NEXTHOP');
+            $node['node_id']            = strtolower($device->serial);
+            $node['mac']                = $device->mac;
+            $node['addresses']          = [$device->ip];
+            $node['site_code']          = getenv('FREIFUNK_SITEID');
+            $node['hostname']           = $name;
+            $node['owner']              = $ap_metadata['owner'];
+            if (!is_null($ap_metadata['position']['lat']) and !is_null($ap_metadata['position']['long'])){
+                $node['location']['longitude']  = $ap_metadata['position']['long'];
+                $node['location']['latitude']   = $ap_metadata['position']['lat'];
+            }
+            $node['firmware']['base']           = 'Ubiquiti Networks';
+            $node['firmware']['release']        = $device->version;
+            $node['autoupdater']['enabled']     = false;
+            $node['autoupdater']['release']     = 'stable';
             $node['nproc'] = 1;
             $node['model'] = $this->getModel($device->model);
             $node['vpn'] = false;
             $return[] = $node;
             unset($node, $name, $ap_metadata);
         }
-        $return[] = $this->buildGatewayNodeForMeshviewerlist();
+        #$return[] = $this->buildGatewayNodeForMeshviewerlist();
         return $return;
     }
 
@@ -313,4 +323,73 @@ class MeshviewerGenerator{
         file_put_contents('data/meshviewer.json', $return_nodeList);
     }
 
+    public function writeDeviceCache($device){
+        if ($device->state == 1){
+            file_put_contents("../cache/".$device->serial.".json", json_encode($device,JSON_PRETTY_PRINT));
+        }
+    }
+
+    public function writeDeviceFile(object $device){
+        if ($this->checkDeviceFileExists($device->serial)){
+            if ($device->state == 1){
+                $deviceData = $this->loadDeviceByDeviceId($device->serial);
+                $deviceData['name_internal'] = isset($device->name) ? $device->name : "Unkown";
+                $deviceData['ip'] = $device->ip;
+                $deviceData['last_seen'] = date(DATE_ISO8601,$device->last_seen);
+                $deviceData['uptime'] = date(DATE_ISO8601,time()-$device->uptime);
+                $deviceData['owner'] = getenv('OWNER_EMAIL');
+            }
+        } else {
+            $deviceData = [];
+            $deviceData['name'] = "";
+            $deviceData['name_internal'] = isset($device->name) ? $device->name : "Unkown";
+            $deviceData['nodeid'] = $device->serial;
+            $deviceData['mac'] = $device->mac;
+            $deviceData['ip'] = $device->ip;
+            $deviceData['position']["lat"] = null;
+            $deviceData['position']["long"] = null;
+            $deviceData['first_seen'] = date(DATE_ISO8601);
+            $deviceData['last_seen'] = isset($device->last_seen) ? date(DATE_ISO8601,$device->last_seen) : date(DATE_ISO8601,time(2019-01-01));
+            $deviceData['uptime'] = isset($device->uptime) ? date(DATE_ISO8601,time()-$device->uptime) : date(DATE_ISO8601,time()-1);
+            $deviceData['owner'] = getenv('OWNER_EMAIL');
+        }
+        isset($deviceData) ? $this->saveDeviceFile($device->serial, $deviceData) : "";
+
+    }
+
+    private function saveDeviceFile(string $deviceId, array $deviceData = []){
+        if (!empty($deviceData)){
+            file_put_contents("../devices/".$deviceId.".json", json_encode($deviceData,JSON_PRETTY_PRINT));
+        }
+    }
+
+    public function loadDeviceCacheByDeviceID(string $deviceId){
+        if(file_exists("../cache/".$deviceId.".json")){
+            return json_decode(file_get_contents("../cache/".$deviceId.".json"), true);
+        } else {
+
+        }
+    }
+
+    public function loadDeviceByDeviceId(string $deviceId){
+        if(file_exists("../devices/".$deviceId.".json")){
+            return json_decode(file_get_contents("../devices/".$deviceId.".json"),true);
+        }
+    }
+
+    public function checkDeviceFileExists(string $deviceId){
+        if(file_exists("../devices/".$deviceId.".json")){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function checkDeviceCacheFileExists(string $deviceId){
+        if(file_exists("../cache/".$deviceId.".json")){
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

@@ -1,6 +1,8 @@
 .env
 vendor
 composer.lock
+cache/*.json
+devices/*.json
 config/accesspoints.yaml
 public/data/*.json
-public/old_unifi.php
+publict
