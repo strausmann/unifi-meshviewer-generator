@@ -26,6 +26,8 @@ class MeshviewerGenerator{
     private $radio_stat0 = null;
     private $radio_stat1 = null;
     private $ap_metadata = null;
+    private $firmware_base = 'Ubiquiti Networks';
+    private $writeStatus = [];
 
     public function __construct()
     {
@@ -46,7 +48,7 @@ class MeshviewerGenerator{
         $this->client_debug_mode = $this->client->set_debug(true);
     }
 
-    public function addLink($device){
+    private function addLink($device){
         $this->link[$device->serial]["type"] = "other";
         $this->link[$device->serial]["source"] = strtolower($device->serial);
         $this->link[$device->serial]["target"] = getenv('GATEWAY_ID');
@@ -56,32 +58,12 @@ class MeshviewerGenerator{
         $this->link[$device->serial]["target_addr"] = getenv('GATEWAY_MAC');
     }
 
-    public function getLinks(){
+    private function getLinks(){
         $return = [];
         foreach ($this->link as $link) {
             $return[] = $link;
         }
         return $return;
-    }
-
-    public function loadAccessPointsMetaData(){
-        return $this->ap_metadata = yaml_parse_file(dirname(dirname(__FILE__))."/config/accesspoints.yaml", 0);
-    }
-
-    public function loadGatewayMetaData(){
-        return $this->gateway_metadata = yaml_parse_file(dirname(dirname(__FILE__))."/config/gateway.yaml", 0);
-    }
-
-    public function getAccessPointMetaDataBySerial($serial){
-        if (empty($this->ap_metadata)){
-            $this->loadAccessPointsMetaData();
-        }
-        if(isset($this->ap_metadata[$serial])){
-            return $this->ap_metadata[$serial];
-        } else {
-            return false;
-        }
-
     }
 
     private function login(){
@@ -107,14 +89,14 @@ class MeshviewerGenerator{
         return $this->allaccesspoints;
     }
 
-    public function getAllAccessPoints(){
+    private function getAllAccessPoints(){
         if (empty($this->allaccesspoints)){
             $this->getAccessPoints();
         }
         return $this->allaccesspoints;
     }
 
-    public function getAccessPointBySerial(string $serial){
+    private function getAccessPointBySerial(string $serial){
         $tmp = $this->getAllAccessPoints();
         return $tmp[$serial];
     }
@@ -144,18 +126,30 @@ class MeshviewerGenerator{
         }
     }
 
-    public function buildNodesForNodelist(){
+    private function getPosition(object $device){
+        if (isset($device->x) and isset($device->y)){
+            $return = [];
+            $return['lat']  = $device->x;
+            $return['long'] = $device->y;
+            return $return;
+        } else {
+            return false;
+        }
+    }
+
+    private function buildNodesForNodelist(){
         $devices = $this->getAllAccessPoints();
         $return = [];
         foreach ($devices as $device) {
             $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
+            $position = $this->getPosition($device);
             if ($ap_metadata){
                 $node = [];
                 $node['id'] = $device->serial;
                 $node['name'] = $ap_metadata['name'];
-                if (!is_null($ap_metadata['position']['lat']) and !is_null($ap_metadata['position']['long'])){
-                    $node['position']['lat'] = $ap_metadata['position']['lat'];
-                    $node['position']['long'] = $ap_metadata['position']['long'];
+                if ($position){
+                    $node['position']['longitude']  = $position['long'];
+                    $node['position']['latitude']   = $position['lat'];
                 }
                 if ($device->state == 1){
                     $node['status']['online'] = true;
@@ -173,12 +167,13 @@ class MeshviewerGenerator{
         return $return;
     }
 
-    public function buildNodesForMeshviewerList(){
+    private function buildNodesForMeshviewerList(){
         $devices = $this->getAllAccessPoints();
         $return = [];
         foreach ($devices as $device) {
             $this->addLink($device);
             $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
+            $position = $this->getPosition($device);
             if (isset($ap_metadata['name'])){
                 $name = $ap_metadata['name'];
             } elseif (isset($device->name)) {
@@ -226,11 +221,11 @@ class MeshviewerGenerator{
             $node['site_code']          = getenv('FREIFUNK_SITEID');
             $node['hostname']           = $name;
             $node['owner']              = $ap_metadata['owner'];
-            if (!is_null($ap_metadata['position']['lat']) and !is_null($ap_metadata['position']['long'])){
-                $node['location']['longitude']  = $ap_metadata['position']['long'];
-                $node['location']['latitude']   = $ap_metadata['position']['lat'];
+            if ($position){
+                $node['location']['longitude']  = $position['long'];
+                $node['location']['latitude']   = $position['lat'];
             }
-            $node['firmware']['base']           = 'Ubiquiti Networks';
+            $node['firmware']['base']           = $this->firmware_base;
             $node['firmware']['release']        = $device->version;
             $node['autoupdater']['enabled']     = false;
             $node['autoupdater']['release']     = 'stable';
@@ -244,7 +239,8 @@ class MeshviewerGenerator{
         return $return;
     }
 
-    public function buildGatewayNodeForNodelist(){
+    //Deprecated
+    private function buildGatewayNodeForNodelist(){
         $return = [];
         $return['id'] = getenv('GATEWAY_ID');
         $return['name'] = getenv('GATEWAY_NAME');
@@ -254,7 +250,8 @@ class MeshviewerGenerator{
         return $return;
     }
 
-    public function buildGatewayNodeForMeshviewerlist(){
+    //Deprecated
+    private function buildGatewayNodeForMeshviewerlist(){
         $return = [];
         #print_r(@file_get_contents('/proc/uptime'));
         #echo print_r($this->Uptime());
@@ -272,12 +269,11 @@ class MeshviewerGenerator{
         $return['rootfs_usage'] = 0;
         $return['loadavg'] = $load[0];
         $return['memory_usage'] = 0;
-    #$return['uptime'] = $uptime;
         $return['node_id'] = getenv('GATEWAY_ID');
         $return['mac'] = getenv('GATEWAY_MAC');
         $return['addresses'] = [getenv('GATEWAY_IPADDRESS')];
         $return['hostname'] = getenv('GATEWAY_NAME');
-        $return['firmware']['base'] = getenv('GATEWAY_BASE');
+        $return['firmware']['base'] = $this->firmware_base;
         $return['firmware']['release'] = "RELEASE";
         $return['autoupdater']['enabled'] = false;
         $return['nproc'] = 2;
@@ -285,7 +281,7 @@ class MeshviewerGenerator{
         return $return;
     }
 
-    public function buildMeshviewer(){
+    private function buildMeshviewer(){
         $devices = $this->getAllAccessPoints();
         $return = [];
 
@@ -305,22 +301,32 @@ class MeshviewerGenerator{
         return $this->meshview;
     }
 
-    public function outputNodelist(){
-        return json_encode($this->buildNodelist());
+    private function outputNodelist(){
+        return json_encode($this->buildNodelist(),JSON_PRETTY_PRINT);
     }
 
-    public function outputMeshviewerList(){
-        return json_encode($this->buildMeshviewerList());
+    private function outputMeshviewerList(){
+        return json_encode($this->buildMeshviewerList(),JSON_PRETTY_PRINT);
     }
 
     public function writeNodeListFile(){
         $return_nodeList = $this->outputNodelist();
-        file_put_contents('data/nodelist.json', $return_nodeList);
+        $respone = file_put_contents('data/nodelist.json', $return_nodeList);
+        if ($respone){
+            $this->writeStatus['nodelist'] = true;
+        } else {
+            $this->writeStatus['nodelist'] = false;
+        }
     }
 
     public function writeMeshviewerListFile(){
         $return_nodeList = $this->outputMeshviewerList();
-        file_put_contents('data/meshviewer.json', $return_nodeList);
+        $respone = file_put_contents('data/meshviewer.json', $return_nodeList);
+        if ($respone){
+            $this->writeStatus['meshviewer'] = true;
+        } else {
+            $this->writeStatus['meshviewer'] = false;
+        }
     }
 
     public function writeDeviceCache($device){
@@ -346,8 +352,6 @@ class MeshviewerGenerator{
             $deviceData['nodeid'] = $device->serial;
             $deviceData['mac'] = $device->mac;
             $deviceData['ip'] = $device->ip;
-            $deviceData['position']["lat"] = null;
-            $deviceData['position']["long"] = null;
             $deviceData['first_seen'] = date(DATE_ISO8601);
             $deviceData['last_seen'] = isset($device->last_seen) ? date(DATE_ISO8601,$device->last_seen) : date(DATE_ISO8601,time(2019-01-01));
             $deviceData['uptime'] = isset($device->uptime) ? date(DATE_ISO8601,time()-$device->uptime) : date(DATE_ISO8601,time()-1);
@@ -391,5 +395,39 @@ class MeshviewerGenerator{
         } else {
             return false;
         }
+    }
+
+    private function returnWriteStatus(){
+        $return = [];
+        if (isset($this->writeStatus['nodelist']) and isset($this->writeStatus['meshviewer'])){
+            if ($this->writeStatus['nodelist'] === true and $this->writeStatus['meshviewer'] === true) {
+                $return['status'] = true;
+
+            } else {
+                $return['status'] = false;
+
+            }
+            $return['json']['nodelist'] = $this->writeStatus['nodelist'];
+            $return['json']['meshviewer'] = $this->writeStatus['meshviewer'];
+        } else {
+            $return['status'] = false;
+            if (!isset($this->writeStatus['nodelist'])){
+                $return['json']['nodelist'] = "status unknown";
+            } else {
+                $return['json']['nodelist'] = $this->writeStatus['nodelist'];
+            }
+            if (!isset($this->writeStatus['meshviewer'])){
+                $return['json']['meshviewer'] = "status unknown";
+            } else {
+                $return['json']['meshviewer'] = $this->writeStatus['meshviewer'];
+            }
+        }
+        return $return;
+    }
+
+    public function executeTask(){
+        $this->writeNodeListFile();
+        $this->writeMeshviewerListFile();
+        return json_encode($this->returnWriteStatus(),JSON_PRETTY_PRINT);
     }
 }
