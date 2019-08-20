@@ -1,8 +1,8 @@
 .env
+.htaccess
 vendor
 composer.lock
 cache/*.json
 devices/*.json
-config/accesspoints.yaml
 public/data/*.json
 publict
