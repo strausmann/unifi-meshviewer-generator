@@ -2,6 +2,8 @@
 
 Der Unifi Meshviewer Generator verbindet sich per API mit dem Unifi Controller (z.B. dem Cloudkey) und ermittelt alle AccessPoints. Aus den Daten wird eine meshviewer.json und eine nodelist.json erzeugt. Diese können anschließend im Meshviewer und der Nodelist zusätzlich eingebunden werden. Somit sind auch Unifi AccessPoints die mit der Stock Firmware an einem Unifi Controller betrieben werden, zukünftig auf der Freifunk Map zu sehen. Dieses Projekt basiert auf der Idee von [Freifunk-Greifswald/UniFi.php](https://github.com/Freifunk-Greifswald/UniFi.php), vielen Dank für den Ansatz.
 
+The GitHub repository is only a mirror of our [GitLab](https://git.isp-serverfarm.de/freifunk-nordheide/unifi-meshviewer-generator)
+
 ## Requirements
 
 - a web server with PHP and cURL modules installed (tested on Apache 2.4 / NGINX with PHP Version 5.6.26 and cURL 7.42.1 and with PHP 7.2.10 and cURL 7.58.0)
