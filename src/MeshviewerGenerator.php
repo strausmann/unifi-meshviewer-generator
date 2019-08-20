@@ -26,6 +26,7 @@ class MeshviewerGenerator{
     private $radio_stat0 = null;
     private $radio_stat1 = null;
     private $ap_metadata = null;
+    private $firmware_base = 'Ubiquiti Networks';
 
     public function __construct()
     {
@@ -144,18 +145,30 @@ class MeshviewerGenerator{
         }
     }
 
-    public function buildNodesForNodelist(){
+    private function getPosition(object $device){
+        if (isset($device->x) and isset($device->y)){
+            $return = [];
+            $return['lat']  = $device->x;
+            $return['long'] = $device->y;
+            return $return;
+        } else {
+            return false;
+        }
+    }
+
+    private function buildNodesForNodelist(){
         $devices = $this->getAllAccessPoints();
         $return = [];
         foreach ($devices as $device) {
             $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
+            $position = $this->getPosition($device);
             if ($ap_metadata){
                 $node = [];
                 $node['id'] = $device->serial;
                 $node['name'] = $ap_metadata['name'];
-                if (!is_null($ap_metadata['position']['lat']) and !is_null($ap_metadata['position']['long'])){
-                    $node['position']['lat'] = $ap_metadata['position']['lat'];
-                    $node['position']['long'] = $ap_metadata['position']['long'];
+                if ($position){
+                    $node['position']['longitude']  = $position['long'];
+                    $node['position']['latitude']   = $position['lat'];
                 }
                 if ($device->state == 1){
                     $node['status']['online'] = true;
@@ -173,12 +186,13 @@ class MeshviewerGenerator{
         return $return;
     }
 
-    public function buildNodesForMeshviewerList(){
+    private function buildNodesForMeshviewerList(){
         $devices = $this->getAllAccessPoints();
         $return = [];
         foreach ($devices as $device) {
             $this->addLink($device);
             $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
+            $position = $this->getPosition($device);
             if (isset($ap_metadata['name'])){
                 $name = $ap_metadata['name'];
             } elseif (isset($device->name)) {
@@ -226,11 +240,11 @@ class MeshviewerGenerator{
             $node['site_code']          = getenv('FREIFUNK_SITEID');
             $node['hostname']           = $name;
             $node['owner']              = $ap_metadata['owner'];
-            if (!is_null($ap_metadata['position']['lat']) and !is_null($ap_metadata['position']['long'])){
-                $node['location']['longitude']  = $ap_metadata['position']['long'];
-                $node['location']['latitude']   = $ap_metadata['position']['lat'];
+            if ($position){
+                $node['location']['longitude']  = $position['long'];
+                $node['location']['latitude']   = $position['lat'];
             }
-            $node['firmware']['base']           = 'Ubiquiti Networks';
+            $node['firmware']['base']           = $this->firmware_base;
             $node['firmware']['release']        = $device->version;
             $node['autoupdater']['enabled']     = false;
             $node['autoupdater']['release']     = 'stable';
@@ -244,6 +258,7 @@ class MeshviewerGenerator{
         return $return;
     }
 
+    //Deprecated
     public function buildGatewayNodeForNodelist(){
         $return = [];
         $return['id'] = getenv('GATEWAY_ID');
@@ -254,6 +269,7 @@ class MeshviewerGenerator{
         return $return;
     }
 
+    //Deprecated
     public function buildGatewayNodeForMeshviewerlist(){
         $return = [];
         #print_r(@file_get_contents('/proc/uptime'));
@@ -277,7 +293,7 @@ class MeshviewerGenerator{
         $return['mac'] = getenv('GATEWAY_MAC');
         $return['addresses'] = [getenv('GATEWAY_IPADDRESS')];
         $return['hostname'] = getenv('GATEWAY_NAME');
-        $return['firmware']['base'] = getenv('GATEWAY_BASE');
+        $return['firmware']['base'] = $this->firmware_base;
         $return['firmware']['release'] = "RELEASE";
         $return['autoupdater']['enabled'] = false;
         $return['nproc'] = 2;
@@ -346,8 +362,6 @@ class MeshviewerGenerator{
             $deviceData['nodeid'] = $device->serial;
             $deviceData['mac'] = $device->mac;
             $deviceData['ip'] = $device->ip;
-            $deviceData['position']["lat"] = null;
-            $deviceData['position']["long"] = null;
             $deviceData['first_seen'] = date(DATE_ISO8601);
             $deviceData['last_seen'] = isset($device->last_seen) ? date(DATE_ISO8601,$device->last_seen) : date(DATE_ISO8601,time(2019-01-01));
             $deviceData['uptime'] = isset($device->uptime) ? date(DATE_ISO8601,time()-$device->uptime) : date(DATE_ISO8601,time()-1);
