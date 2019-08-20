@@ -221,7 +221,6 @@ class MeshviewerGenerator{
             $node['site_code']          = getenv('FREIFUNK_SITEID');
             $node['hostname']           = $name;
             $node['owner']              = $ap_metadata['owner'];
-            print_r($position);
             if ($position){
                 $node['location']['longitude']  = $position['long'];
                 $node['location']['latitude']   = $position['lat'];
