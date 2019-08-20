@@ -26,10 +26,8 @@ header('Content-Type: application/json');
 // Initiate the MeshviewerGenerator
 $meshGenerator = new MeshviewerGenerator();
 
-// generate the NodeList JSON file in the data/ folder
-$meshGenerator->writeNodeListFile();
+// Generate the JSON Files
+$status = $meshGenerator->executeTask();
 
-// generate the Meshviewer JSON file in the data/ folder
-$meshGenerator->writeMeshviewerListFile();
-
+echo $status;
 ?>
