@@ -127,7 +127,7 @@ class MeshviewerGenerator{
     }
 
     private function getPosition(object $device){
-        if (isset($device->x) and isset($device->y)){
+        if ((isset($device->x) and isset($device->y)) and (!empty($device->x) and !empty($device->y))){
             $return = [];
             $return['lat']  = $device->x;
             $return['long'] = $device->y;
