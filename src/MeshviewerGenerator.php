@@ -127,7 +127,7 @@ class MeshviewerGenerator{
     }
 
     private function getPosition(object $device){
-        if (isset($device->x) and isset($device->y)){
+        if ((isset($device->x) and isset($device->y)) and (!empty($device->x) and !empty($device->y))){
             $return = [];
             $return['lat']  = $device->x;
             $return['long'] = $device->y;
@@ -221,6 +221,7 @@ class MeshviewerGenerator{
             $node['site_code']          = getenv('FREIFUNK_SITEID');
             $node['hostname']           = $name;
             $node['owner']              = $ap_metadata['owner'];
+            print_r($position);
             if ($position){
                 $node['location']['longitude']  = $position['long'];
                 $node['location']['latitude']   = $position['lat'];
