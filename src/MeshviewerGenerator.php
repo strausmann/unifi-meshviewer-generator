@@ -306,11 +306,11 @@ class MeshviewerGenerator{
     }
 
     public function outputNodelist(){
-        return json_encode($this->buildNodelist());
+        return json_encode($this->buildNodelist(),JSON_PRETTY_PRINT);
     }
 
     public function outputMeshviewerList(){
-        return json_encode($this->buildMeshviewerList());
+        return json_encode($this->buildMeshviewerList(),JSON_PRETTY_PRINT);
     }
 
     public function writeNodeListFile(){
