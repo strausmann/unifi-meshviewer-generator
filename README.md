@@ -54,7 +54,7 @@ If you prefer not to use git, you can simply [download the package](https://git.
 * Set the WWW root directory of your web server to the Public folder from the project. This prevents direct access to your .env and the folders /cache, /devices and /vendor.
 * Copy the htaccess.txt files to .htaccess in the folders /public and /public/data and set your IP address in the /public/.htaccess file. Do not rename the files. Here you have to set the IP address of the client/server which is allowed to call the index.php regularly e.g. as cronjob. This is a security feature so that the Unifi Controller credentials are not displayed in plain text if an error occurs during execution.
 * Perform a first manual call of index.php (http://myunifiservice.domain.de/index.php). Note: The "public" path should not be included in the call. Otherwise the .env could be reached directly from the internet.
-* With the first call, all AccessPoints are determined and stored in the folder /devices as JSON file. The public name and the coordinates for the corresponding AccessPoint must be stored in the files.
+* With the first call, all AccessPoints are determined and stored in the folder /devices as JSON file. The public name for the AccessPoints must be stored in the files.
 * Create a cronjob that calls index.php every 5 minutes. With this call the information is retrieved via API from the Unifi controller and processed in JSON format.
 * Now share the URL to your webservice with your Community Admin Team. The admins can then integrate the URL into the Meshviewer.
 
