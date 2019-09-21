@@ -49,7 +49,7 @@ If you prefer not to use git, you can simply [download the package](https://git.
 | UNIFI_ZONE    | Set the Unifi Controller Zone                      | default                     | X        |
 | UNIFI_VERSION | Set the Unifi Controller Version                   | 5.10.26                     |          |
 | FREIFUNK_SSID | Filter the connected wireless clients by this ssid | nordheide.freifunk.net      | X        |
-| GATEWAY_ID    | Use the Offloader Node ID                          | 18e8295ccf02                | X        |
+| GATEWAY_NEXTHOP    | Use the Offloader Node ID                          | 18e8295ccf02                | X        |
 
 * Set the WWW root directory of your web server to the Public folder from the project. This prevents direct access to your .env and the folders /cache, /devices and /vendor.
 * Copy the htaccess.txt files to .htaccess in the folders /public and /public/data and set your IP address in the /public/.htaccess file. Do not rename the files. Here you have to set the IP address of the client/server which is allowed to call the index.php regularly e.g. as cronjob. This is a security feature so that the Unifi Controller credentials are not displayed in plain text if an error occurs during execution.
