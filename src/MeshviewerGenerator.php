@@ -416,6 +416,7 @@ class MeshviewerGenerator{
                 $return['json']['meshviewer'] = $this->writeStatus['meshviewer'];
             }
         }
+        $return['package_version'] = \PackageVersions\Versions::getVersion('ispserverfarm/unifi-meshviewer-generator');
         return $return;
     }
 
