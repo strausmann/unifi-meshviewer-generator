@@ -20,11 +20,15 @@ $dotenv->load(true);
 // set TimeZone
 date_default_timezone_set(getenv('TIMEZONE'));
 
-// set Content Type to application/json
-header('Content-Type: application/json');
-
 // Initiate the MeshviewerGenerator
 $meshGenerator = new MeshviewerGenerator();
+
+// Test
+#echo "<pre>";
+#$meshGenerator->getGateway("18e8295ccf02");
+
+// set Content Type to application/json
+header('Content-Type: application/json');
 
 // Generate the JSON Files
 $status = $meshGenerator->executeTask();
