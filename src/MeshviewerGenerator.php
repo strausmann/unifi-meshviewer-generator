@@ -96,7 +96,7 @@ class MeshviewerGenerator{
         return $this->allaccesspoints;
     }
 
-    private function getAccessPointBySerial(string $serial){
+    private function getAccessPointBySerial($serial){
         $tmp = $this->getAllAccessPoints();
         return $tmp[$serial];
     }
@@ -126,7 +126,7 @@ class MeshviewerGenerator{
         }
     }
 
-    private function getPosition(object $device){
+    private function getPosition($device){
         if ((isset($device->x) and isset($device->y)) and (!empty($device->x) and !empty($device->y))){
             $return = [];
             $return['lat']  = $device->x;
@@ -335,7 +335,7 @@ class MeshviewerGenerator{
         }
     }
 
-    public function writeDeviceFile(object $device){
+    public function writeDeviceFile($device){
         if ($this->checkDeviceFileExists($device->serial)){
             if ($device->state == 1){
                 $deviceData = $this->loadDeviceByDeviceId($device->serial);
@@ -361,13 +361,13 @@ class MeshviewerGenerator{
 
     }
 
-    private function saveDeviceFile(string $deviceId, array $deviceData = []){
+    private function saveDeviceFile($deviceId, array $deviceData = []){
         if (!empty($deviceData)){
             file_put_contents("../devices/".$deviceId.".json", json_encode($deviceData,JSON_PRETTY_PRINT));
         }
     }
 
-    public function loadDeviceCacheByDeviceID(string $deviceId){
+    public function loadDeviceCacheByDeviceID($deviceId){
         if(file_exists("../cache/".$deviceId.".json")){
             return json_decode(file_get_contents("../cache/".$deviceId.".json"), true);
         } else {
@@ -375,13 +375,13 @@ class MeshviewerGenerator{
         }
     }
 
-    public function loadDeviceByDeviceId(string $deviceId){
+    public function loadDeviceByDeviceId($deviceId){
         if(file_exists("../devices/".$deviceId.".json")){
             return json_decode(file_get_contents("../devices/".$deviceId.".json"),true);
         }
     }
 
-    public function checkDeviceFileExists(string $deviceId){
+    public function checkDeviceFileExists($deviceId){
         if(file_exists("../devices/".$deviceId.".json")){
             return true;
         } else {
@@ -389,7 +389,7 @@ class MeshviewerGenerator{
         }
     }
 
-    public function checkDeviceCacheFileExists(string $deviceId){
+    public function checkDeviceCacheFileExists($deviceId){
         if(file_exists("../cache/".$deviceId.".json")){
             return true;
         } else {
