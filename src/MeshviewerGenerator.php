@@ -53,9 +53,14 @@ class MeshviewerGenerator{
     private function addLink($device){
         $this->link[$device->serial]["type"] = "other";
         $this->link[$device->serial]["source"] = strtolower($device->serial);
-        $this->link[$device->serial]["target"] = getenv('GATEWAY_ID');
-        $this->link[$device->serial]["source_tq"] = 1;
-        $this->link[$device->serial]["target_tq"] = 1;
+        $this->link[$device->serial]["target"] = $this->getGatewayId();
+        if ($device->state == 1){
+            $this->link[$device->serial]["source_tq"] = 1;
+            $this->link[$device->serial]["target_tq"] = 1;
+        } else {
+            $this->link[$device->serial]["source_tq"] = 0;
+            $this->link[$device->serial]["target_tq"] = 0;
+        }
         $this->link[$device->serial]["source_addr"] = $device->mac;
         $this->link[$device->serial]["target_addr"] = $this->getGatewayMac();
     }
