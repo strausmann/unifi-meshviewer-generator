@@ -28,6 +28,8 @@ class MeshviewerGenerator{
     private $ap_metadata = null;
     private $firmware_base = 'Ubiquiti Networks';
     private $writeStatus = [];
+    private $gateway_next_hop = null;
+    private $gateway = null;
 
     public function __construct()
     {
@@ -55,7 +57,7 @@ class MeshviewerGenerator{
         $this->link[$device->serial]["source_tq"] = 1;
         $this->link[$device->serial]["target_tq"] = 1;
         $this->link[$device->serial]["source_addr"] = $device->mac;
-        $this->link[$device->serial]["target_addr"] = getenv('GATEWAY_MAC');
+        $this->link[$device->serial]["target_addr"] = $this->gateway['mac'];
     }
 
     private function getLinks(){
@@ -96,7 +98,7 @@ class MeshviewerGenerator{
         return $this->allaccesspoints;
     }
 
-    private function getAccessPointBySerial(string $serial){
+    private function getAccessPointBySerial($serial){
         $tmp = $this->getAllAccessPoints();
         return $tmp[$serial];
     }
@@ -126,7 +128,7 @@ class MeshviewerGenerator{
         }
     }
 
-    private function getPosition(object $device){
+    private function getPosition($device){
         if ((isset($device->x) and isset($device->y)) and (!empty($device->x) and !empty($device->y))){
             $return = [];
             $return['lat']  = $device->x;
@@ -163,7 +165,6 @@ class MeshviewerGenerator{
                 unset($node);
             }
         }
-        #$return[] = $this->buildGatewayNodeForNodelist();
         return $return;
     }
 
@@ -182,7 +183,7 @@ class MeshviewerGenerator{
                 $name = "Unnamed";
             }
             $node = [];
-            if ($device->state == 1){
+            if ($device->state == 1 and $this->isGatewayOnline()){
                 $stats = $device->stat;
                 $radio_stats = (array) $device->radio_table_stats;
                 $radio_stat0 = $radio_stats[0];
@@ -213,12 +214,12 @@ class MeshviewerGenerator{
                 $node['memory_usage'] = 0;
             }
             $node['uptime']             = $ap_metadata['uptime'];
-            $node['gateway_nexthop']    = getenv('GATEWAY_ID');
-            $node['gateway']            = getenv('GATEWAY_NEXTHOP');
+            $node['gateway_nexthop']    = getenv('GATEWAY_NEXTHOP');
+            $node['gateway']            = $this->getGatewayId();
             $node['node_id']            = strtolower($device->serial);
             $node['mac']                = $device->mac;
             $node['addresses']          = [$device->ip];
-            $node['site_code']          = getenv('FREIFUNK_SITEID');
+            $node['site_code']          = $this->gateway['domain'];
             $node['hostname']           = $name;
             $node['owner']              = $ap_metadata['owner'];
             if ($position){
@@ -235,56 +236,49 @@ class MeshviewerGenerator{
             $return[] = $node;
             unset($node, $name, $ap_metadata);
         }
-        #$return[] = $this->buildGatewayNodeForMeshviewerlist();
         return $return;
     }
 
-    //Deprecated
-    private function buildGatewayNodeForNodelist(){
-        $return = [];
-        $return['id'] = getenv('GATEWAY_ID');
-        $return['name'] = getenv('GATEWAY_NAME');
-        $return['status']['online'] = true;
-        $return['status']['lastcontact'] = date(DATE_ISO8601);
-        $return['status']['clients'] = 0;
-        return $return;
+    private function getMeshViewerDefaultData(){
+        try{
+            return json_decode(@file_get_contents(getenv('FREIFUNK_MESHVIEWERURL')), true);
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+
     }
 
-    //Deprecated
-    private function buildGatewayNodeForMeshviewerlist(){
-        $return = [];
-        #print_r(@file_get_contents('/proc/uptime'));
-        #echo print_r($this->Uptime());
-
-        $load = sys_getloadavg();
-
-        $return['firstseen'] = date(DATE_ISO8601,time(getenv('GATEWAY_FIRSTSEEN')));
-        $return['lastseen'] = date(DATE_ISO8601);
-        $return['is_online'] = true;
-        $return['is_gateway'] = true;
-        $return['clients'] = 0;
-        $return['clients_wifi24'] = 0;
-        $return['clients_wifi5'] = 0;
-        $return['clients_other'] = 0;
-        $return['rootfs_usage'] = 0;
-        $return['loadavg'] = $load[0];
-        $return['memory_usage'] = 0;
-        $return['node_id'] = getenv('GATEWAY_ID');
-        $return['mac'] = getenv('GATEWAY_MAC');
-        $return['addresses'] = [getenv('GATEWAY_IPADDRESS')];
-        $return['hostname'] = getenv('GATEWAY_NAME');
-        $return['firmware']['base'] = $this->firmware_base;
-        $return['firmware']['release'] = "RELEASE";
-        $return['autoupdater']['enabled'] = false;
-        $return['nproc'] = 2;
-        $return['vpn'] = true;
-        return $return;
+    private function loadGateway($GatewayId){
+        $response = $this->getMeshViewerDefaultData();
+        if (isset($response['nodes'])){
+            foreach ($response['nodes'] as $node) {
+                if($node['node_id'] == $GatewayId){
+                    unset($response);
+                    return $this->gateway = $node;
+                }
+            }
+        }
     }
 
-    private function buildMeshviewer(){
-        $devices = $this->getAllAccessPoints();
-        $return = [];
+    private function getGatewayMac(){
+        if (is_null($this->gateway)){
+            $this->loadGateway(getenv('GATEWAY_NEXTHOP'));
+        }
+        return $this->gateway['mac'];
+    }
 
+    private function getGatewayId(){
+        if (is_null($this->gateway)){
+            $this->loadGateway(getenv('GATEWAY_NEXTHOP'));
+        }
+        return $this->gateway['node_id'];
+    }
+
+    private function isGatewayOnline(){
+        if (is_null($this->gateway)){
+            $this->loadGateway(getenv('GATEWAY_NEXTHOP'));
+        }
+        return $this->gateway['is_online'];
     }
 
     private function buildNodelist(){
@@ -311,8 +305,8 @@ class MeshviewerGenerator{
 
     public function writeNodeListFile(){
         $return_nodeList = $this->outputNodelist();
-        $respone = file_put_contents('data/nodelist.json', $return_nodeList);
-        if ($respone){
+        $response = file_put_contents('data/nodelist.json', $return_nodeList);
+        if ($response){
             $this->writeStatus['nodelist'] = true;
         } else {
             $this->writeStatus['nodelist'] = false;
@@ -321,8 +315,8 @@ class MeshviewerGenerator{
 
     public function writeMeshviewerListFile(){
         $return_nodeList = $this->outputMeshviewerList();
-        $respone = file_put_contents('data/meshviewer.json', $return_nodeList);
-        if ($respone){
+        $response = file_put_contents('data/meshviewer.json', $return_nodeList);
+        if ($response){
             $this->writeStatus['meshviewer'] = true;
         } else {
             $this->writeStatus['meshviewer'] = false;
@@ -335,7 +329,7 @@ class MeshviewerGenerator{
         }
     }
 
-    public function writeDeviceFile(object $device){
+    public function writeDeviceFile($device){
         if ($this->checkDeviceFileExists($device->serial)){
             if ($device->state == 1){
                 $deviceData = $this->loadDeviceByDeviceId($device->serial);
@@ -361,13 +355,13 @@ class MeshviewerGenerator{
 
     }
 
-    private function saveDeviceFile(string $deviceId, array $deviceData = []){
+    private function saveDeviceFile($deviceId, array $deviceData = []){
         if (!empty($deviceData)){
             file_put_contents("../devices/".$deviceId.".json", json_encode($deviceData,JSON_PRETTY_PRINT));
         }
     }
 
-    public function loadDeviceCacheByDeviceID(string $deviceId){
+    public function loadDeviceCacheByDeviceID($deviceId){
         if(file_exists("../cache/".$deviceId.".json")){
             return json_decode(file_get_contents("../cache/".$deviceId.".json"), true);
         } else {
@@ -375,13 +369,13 @@ class MeshviewerGenerator{
         }
     }
 
-    public function loadDeviceByDeviceId(string $deviceId){
+    public function loadDeviceByDeviceId($deviceId){
         if(file_exists("../devices/".$deviceId.".json")){
             return json_decode(file_get_contents("../devices/".$deviceId.".json"),true);
         }
     }
 
-    public function checkDeviceFileExists(string $deviceId){
+    public function checkDeviceFileExists($deviceId){
         if(file_exists("../devices/".$deviceId.".json")){
             return true;
         } else {
@@ -389,7 +383,7 @@ class MeshviewerGenerator{
         }
     }
 
-    public function checkDeviceCacheFileExists(string $deviceId){
+    public function checkDeviceCacheFileExists($deviceId){
         if(file_exists("../cache/".$deviceId.".json")){
             return true;
         } else {
