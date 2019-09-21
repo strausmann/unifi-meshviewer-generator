@@ -277,7 +277,7 @@ class MeshviewerGenerator{
         if (is_null($this->gateway)){
             $this->loadGateway(getenv('GATEWAY_NEXTHOP'));
         }
-        return $this->gateway['gateway_nexthop'];
+        return $this->gateway['node_id'];
     }
 
     public function isGatewayOnline(){
