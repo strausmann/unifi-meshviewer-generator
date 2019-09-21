@@ -57,7 +57,7 @@ class MeshviewerGenerator{
         $this->link[$device->serial]["source_tq"] = 1;
         $this->link[$device->serial]["target_tq"] = 1;
         $this->link[$device->serial]["source_addr"] = $device->mac;
-        $this->link[$device->serial]["target_addr"] = $this->gateway['mac'];
+        $this->link[$device->serial]["target_addr"] = $this->getGatewayMac();
     }
 
     private function getLinks(){
@@ -245,7 +245,6 @@ class MeshviewerGenerator{
         } catch (Exception $ex) {
             return $ex->getMessage();
         }
-
     }
 
     private function loadGateway($GatewayId){
@@ -254,9 +253,11 @@ class MeshviewerGenerator{
             foreach ($response['nodes'] as $node) {
                 if($node['node_id'] == $GatewayId){
                     unset($response);
+                    $this->writeGatewayCache($node);
                     return $this->gateway = $node;
                 }
             }
+            return $this->gateway = false;
         }
     }
 
@@ -271,14 +272,18 @@ class MeshviewerGenerator{
         if (is_null($this->gateway)){
             $this->loadGateway(getenv('GATEWAY_NEXTHOP'));
         }
-        return $this->gateway['node_id'];
+        return $this->gateway['gateway_nexthop'];
     }
 
-    private function isGatewayOnline(){
+    public function isGatewayOnline(){
         if (is_null($this->gateway)){
             $this->loadGateway(getenv('GATEWAY_NEXTHOP'));
         }
-        return $this->gateway['is_online'];
+        if ($this->gateway){
+            return $this->gateway['is_online'];
+        } else {
+            return false;
+        }
     }
 
     private function buildNodelist(){
@@ -329,6 +334,12 @@ class MeshviewerGenerator{
         }
     }
 
+    public function writeGatewayCache($gateway){
+        if ($gateway['is_online'] == 1){
+            file_put_contents("../cache/".$gateway['node_id'].".json", json_encode($gateway,JSON_PRETTY_PRINT));
+        }
+    }
+
     public function writeDeviceFile($device){
         if ($this->checkDeviceFileExists($device->serial)){
             if ($device->state == 1){
@@ -365,7 +376,15 @@ class MeshviewerGenerator{
         if(file_exists("../cache/".$deviceId.".json")){
             return json_decode(file_get_contents("../cache/".$deviceId.".json"), true);
         } else {
+            return false;
+        }
+    }
 
+    public function loadGatewayCacheByGatewayID($gatewayId){
+        if(file_exists("../cache/".$gatewayId.".json")){
+            return json_decode(file_get_contents("../cache/".$gatewayId.".json"), true);
+        } else {
+            return false;
         }
     }
 
