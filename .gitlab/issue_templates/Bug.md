@@ -1,9 +1,3 @@
-/title "[BUG] "
-/subscribe
-/label ~bug
-/assign @strausmann
-/todo
-
 <!-- Thank you for taking the time to submit an issue! By following these comments and filling out the sections below, you can help the developers get the necessary information to fix your issue. Please provide a single issue per report. You can also preview this report before submitting it. Feel free to modify/remove sections to fit the nature of your issue. -->
 
 <!-- Please search to check that your issue has not been created already. By preventing duplicate issues, you can help keep the repository organized. If your current issue has already been created and is still unresolved, you can contribute by commenting there. -->
@@ -41,3 +35,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
+
+/subscribe
+/label ~bug
+/assign @strausmann
+/todo
