@@ -107,6 +107,17 @@ class MeshviewerGenerator{
         $tmp = $this->getAllAccessPoints();
         return $tmp[$serial];
     }
+    
+    private function getHostname($device){
+        $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
+        if (isset($ap_metadata['name']) and !empty($ap_metadata['name'])){
+            return $ap_metadata['name'];
+        } elseif (isset($device->name) and !empty($device->name)) {
+            return $device->name;
+        } else {
+            return "Unnamed";
+        }
+    }
 
     private function getModel($model){
         switch ($model) {
@@ -180,13 +191,7 @@ class MeshviewerGenerator{
             $this->addLink($device);
             $ap_metadata = $this->loadDeviceByDeviceID($device->serial);
             $position = $this->getPosition($device);
-            if (isset($ap_metadata['name'])){
-                $name = $ap_metadata['name'];
-            } elseif (isset($device->name)) {
-                $name = $device->name;
-            } else {
-                $name = "Unnamed";
-            }
+
             $node = [];
             if ($device->state == 1 and $this->isGatewayOnline()){
                 $stats = $device->stat;
@@ -225,7 +230,7 @@ class MeshviewerGenerator{
             $node['mac']                = $device->mac;
             $node['addresses']          = [$device->ip];
             $node['site_code']          = $this->gateway['domain'];
-            $node['hostname']           = $name;
+            $node['hostname']           = $this->getHostname($device);
             $node['owner']              = $ap_metadata['owner'];
             if ($position){
                 $node['location']['longitude']  = $position['long'];
