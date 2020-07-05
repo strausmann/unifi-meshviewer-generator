@@ -229,7 +229,7 @@ class MeshviewerGenerator{
             $node['node_id']            = strtolower($device->serial);
             $node['mac']                = $device->mac;
             $node['addresses']          = [$device->ip];
-            $node['site_code']          = $this->gateway['domain'];
+            $node['domain']             = $this->gateway['domain'];
             $node['hostname']           = $this->getHostname($device);
             $node['owner']              = $ap_metadata['owner'];
             if ($position){
@@ -238,7 +238,7 @@ class MeshviewerGenerator{
             }
             $node['firmware']['base']           = $this->firmware_base;
             $node['firmware']['release']        = $device->version;
-            $node['autoupdater']['enabled']     = false;
+            $node['autoupdater']['enabled']     = true;
             $node['autoupdater']['release']     = 'stable';
             $node['nproc'] = 1;
             $node['model'] = $this->getModel($device->model);
