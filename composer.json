@@ -15,7 +15,7 @@
         "json"
     ],
     "require": {
-        "php": ">=5.6.0",
+        "php": ">=7.1.0",
         "ext-curl": "*",
         "art-of-wifi/unifi-api-client": "^1.1",
         "composer/composer": "^1.9",
