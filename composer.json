@@ -16,14 +16,13 @@
     ],
     "require": {
         "php": ">=7.1.0",
-        "ext-curl": "*",
         "art-of-wifi/unifi-api-client": "^1.1",
-        "composer/composer": "^1.9",
-        "ocramius/package-versions": "^1.4",
-        "vlucas/phpdotenv": "^3.4"
+        "composer/composer": "^1.10",
+        "ocramius/package-versions": "^1.0",
+        "vlucas/phpdotenv": "^5.0"
     },
     "require-dev": {
-        "filp/whoops": "^2.5",
+        "filp/whoops": "^2.0",
         "phpunit/phpunit": "^4.8.35 || ^5.0 || ^6.0 || ^7.0"
     },
     "homepage": "https://github.com/strausmann",
