@@ -12,6 +12,7 @@ class MeshviewerGenerator{
     protected $unifi_site   = "";
     protected $client = null;
     protected $client_debug = null;
+    protected $client_debug_mode = null;
     protected $client_loginresult = null;
     protected $alldevices = null;
     protected $allaccesspoints = [];
@@ -39,6 +40,11 @@ class MeshviewerGenerator{
             getenv('UNIFI_URL'),
             getenv('UNIFI_ZONE'),
             getenv('UNIFI_VERSION'));
+    }
+
+    public static function ping()
+    {
+        return "ping:pong";
     }
 
     public function outputDebug(){
@@ -244,7 +250,7 @@ class MeshviewerGenerator{
             $node['model'] = $this->getModel($device->model);
             $node['vpn'] = false;
             $return[] = $node;
-            unset($node, $name, $ap_metadata);
+            unset($node, $ap_metadata);
         }
         return $return;
     }
@@ -252,7 +258,7 @@ class MeshviewerGenerator{
     private function getMeshViewerDefaultData(){
         try{
             return json_decode(@file_get_contents(getenv('FREIFUNK_MESHVIEWERURL')), true);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return $ex->getMessage();
         }
     }

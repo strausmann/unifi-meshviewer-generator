@@ -1,0 +1,63 @@
+stages:
+  - test
+  
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+default:
+  before_script:
+    - pecl install xdebug && docker-php-ext-enable xdebug
+    - composer self-update
+    - composer install --no-interaction
+    - composer require --dev phpstan/phpstan
+
+test:php7.1:
+  stage: test
+  image: phpdocker/phpdocker:7.1
+  tags:
+    - dind
+  script:
+    #- phpcs --standard=PSR2 -nsp src tests
+    - ./vendor/bin/phpunit --configuration phpunit.xml
+    - vendor/bin/phpstan analyse src tests
+
+test:php7.2:
+  stage: test
+  image: phpdocker/phpdocker:7.2
+  tags:
+    - dind
+  script:
+    #- phpcs --standard=PSR2 -nsp src tests
+    - ./vendor/bin/phpunit --configuration phpunit.xml
+    - vendor/bin/phpstan analyse src tests
+
+test:php7.3:
+  stage: test
+  image: phpdocker/phpdocker:7.3
+  tags:
+    - dind
+  script:
+    #- phpcs --standard=PSR2 -nsp src tests
+    - ./vendor/bin/phpunit --configuration phpunit.xml
+    - vendor/bin/phpstan analyse src tests
+
+test:php7.4:
+  stage: test
+  image: phpdocker/phpdocker:7.4
+  tags:
+    - dind
+  script:
+    #- phpcs --standard=PSR2 -nsp src tests
+    - ./vendor/bin/phpunit --configuration phpunit.xml
+    - vendor/bin/phpstan analyse src tests
+
+code_quality:
+  stage: test
+  tags:
+    - dind
+  allow_failure: true
+  before_script:
+    - docker info
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
