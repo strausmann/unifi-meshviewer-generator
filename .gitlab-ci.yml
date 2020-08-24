@@ -65,13 +65,13 @@ code_quality:
 
 pages:
   stage: deploy
-  before_script:
-    - git submodule sync --recursive
-    - git submodule update --init --recursive
-
+  image: busybox
+  tags:
+    - dind
+  script:
+    - echo "Copying public dic..."
   artifacts:
     paths:
-      - pages
+      - public
   only:
-  - master
-
+    - master
