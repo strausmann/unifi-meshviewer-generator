@@ -1,5 +1,6 @@
 stages:
   - test
+  - deploy
   
 include:
   - template: Code-Quality.gitlab-ci.yml
@@ -61,3 +62,16 @@ code_quality:
   artifacts:
     reports:
       codequality: gl-code-quality-report.json
+
+pages:
+  stage: deploy
+  before_script:
+    - git submodule sync --recursive
+    - git submodule update --init --recursive
+
+  artifacts:
+    paths:
+      - pages
+  only:
+  - master
+
