@@ -19,11 +19,11 @@ test:php7.1:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php71.cov --coverage-html pages/php71 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php71.cov --coverage-html $CI_BUILD_REF_NAME/php71 --coverage-text
     - vendor/bin/phpstan analyse src tests
   artifacts:
     paths:
-      - pages
+      - $CI_BUILD_REF_NAME
       - coverage/
 
 test:php7.2:
@@ -33,11 +33,11 @@ test:php7.2:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php72.cov --coverage-html pages/php72 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php72.cov --coverage-html $CI_BUILD_REF_NAME/php72 --coverage-text
     - vendor/bin/phpstan analyse src tests
   artifacts:
     paths:
-      - pages
+      - $CI_BUILD_REF_NAME
 
 test:php7.3:
   stage: test
@@ -46,11 +46,11 @@ test:php7.3:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php73.cov --coverage-html pages/php73 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php73.cov --coverage-html $CI_BUILD_REF_NAME/php73 --coverage-text
     - vendor/bin/phpstan analyse src tests
   artifacts:
     paths:
-      - pages
+      - $CI_BUILD_REF_NAME
 
 test:php7.4:
   stage: test
@@ -59,12 +59,12 @@ test:php7.4:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov --coverage-html pages/php74 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov --coverage-html $CI_BUILD_REF_NAME/php74 --coverage-text
     - vendor/bin/phpstan analyse src tests
     - ls -lah pages
   artifacts:
     paths:
-      - pages
+      - $CI_BUILD_REF_NAME
       - coverage
       - tests/clover.xml
 
@@ -88,11 +88,15 @@ pages:
     - dind
   script:
     - rm -rf public && mv pages public
+    - cp -R $CI_BUILD_REF_NAME public/$CI_BUILD_REF_NAME
     - echo "Copying public dic..."
     - echo $CI_PAGES_DOMAIN
     - echo $CI_PAGES_URL
   artifacts:
     paths:
       - public
+  environment: 
+    name: review/$CI_BUILD_REF_NAME 
+    url: $CI_PAGES_URL/$CI_BUILD_REF_NAME/
   only:
     - master
