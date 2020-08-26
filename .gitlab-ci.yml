@@ -85,21 +85,21 @@ phpcs-security-audit-sast:
   tags:
     - dind
   before_script:
-    - docker info
+    - echo "skip before_script"
 
 eslint-sast:
   stage: test
   tags:
     - dind
   before_script:
-    - docker info
+    - echo "skip before_script"
 
 secrets-sast:
   stage: test
   tags:
     - dind
   before_script:
-    - docker info
+    - echo "skip before_script"
 
 pages:
   cache:
