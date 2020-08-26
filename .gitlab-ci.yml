@@ -21,6 +21,9 @@ test:php7.1:
     #- phpcs --standard=PSR2 -nsp src tests
     - ./vendor/bin/phpunit --configuration phpunit.xml
     - vendor/bin/phpstan analyse src tests
+  artifacts:
+    paths:
+      - coverage/
 
 test:php7.2:
   stage: test
