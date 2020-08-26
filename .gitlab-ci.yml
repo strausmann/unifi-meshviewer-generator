@@ -19,7 +19,7 @@ test:php7.1:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php71.cov --coverage-html ./pages
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php71.cov --coverage-html pages --coverage-text
     - vendor/bin/phpstan analyse src tests
   artifacts:
     paths:
@@ -32,7 +32,7 @@ test:php7.2:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php72.cov --coverage-html ./pages
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php72.cov --coverage-html pages --coverage-text
     - vendor/bin/phpstan analyse src tests
 
 test:php7.3:
@@ -42,7 +42,7 @@ test:php7.3:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php73.cov
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php73.cov --coverage-html pages --coverage-text
     - vendor/bin/phpstan analyse src tests
 
 test:php7.4:
@@ -52,8 +52,9 @@ test:php7.4:
     - dind
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov --coverage-html pages --coverage-text
     - vendor/bin/phpstan analyse src tests
+    - ls -lah pages
 
 code_quality:
   stage: test
