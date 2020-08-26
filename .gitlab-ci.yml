@@ -89,6 +89,10 @@ pages:
   script:
     - rm -rf public && mv pages public
     - echo "Copying public dic..."
+    - echo $CI_PAGES_DOMAIN
+    - echo $CI_PAGES_URL
   artifacts:
     paths:
       - public
+  only:
+    - master
