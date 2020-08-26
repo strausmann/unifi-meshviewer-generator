@@ -84,21 +84,21 @@ phpcs-security-audit-sast:
   stage: test
   tags:
     - dind
- before_script:
+  before_script:
     - docker info
 
 eslint-sast:
   stage: test
   tags:
     - dind
- before_script:
+  before_script:
     - docker info
 
 secrets-sast:
   stage: test
   tags:
     - dind
- before_script:
+  before_script:
     - docker info
 
 pages:
