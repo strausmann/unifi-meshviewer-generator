@@ -4,6 +4,7 @@ stages:
   
 include:
   - template: Code-Quality.gitlab-ci.yml
+  - template: SAST.gitlab-ci.yml
 
 default:
   before_script:
