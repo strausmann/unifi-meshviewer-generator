@@ -23,7 +23,8 @@
     },
     "require-dev": {
         "filp/whoops": "^2.0",
-        "phpunit/phpunit": "^4.8.35 || ^5.0 || ^6.0 || ^7.0"
+        "phpunit/phpunit": "^4.8.35 || ^5.0 || ^6.0 || ^7.0",
+        "friendsofphp/php-cs-fixer": "^2.10"
     },
     "homepage": "https://github.com/strausmann",
     "autoload": {
