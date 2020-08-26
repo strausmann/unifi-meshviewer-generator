@@ -64,6 +64,8 @@ code_quality:
       codequality: gl-code-quality-report.json
 
 pages:
+  before_script:
+    - echo "skip before_script"
   stage: deploy
   image: busybox
   tags:
