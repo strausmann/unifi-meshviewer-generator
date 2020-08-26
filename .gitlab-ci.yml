@@ -55,6 +55,11 @@ test:php7.4:
     - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov --coverage-html pages --coverage-text
     - vendor/bin/phpstan analyse src tests
     - ls -lah pages
+  artifacts:
+    paths:
+      - pages
+      - coverage
+      - tests/clover.xml
 
 code_quality:
   stage: test
