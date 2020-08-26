@@ -80,6 +80,27 @@ code_quality:
     reports:
       codequality: gl-code-quality-report.json
 
+phpcs-security-audit-sast:
+  stage: test
+  tags:
+    - dind
+ before_script:
+    - docker info
+
+eslint-sast:
+  stage: test
+  tags:
+    - dind
+ before_script:
+    - docker info
+
+secrets-sast:
+  stage: test
+  tags:
+    - dind
+ before_script:
+    - docker info
+
 pages:
   cache:
     paths:
