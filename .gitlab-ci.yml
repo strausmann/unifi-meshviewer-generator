@@ -71,9 +71,10 @@ pages:
   tags:
     - dind
   script:
-    - echo "Copying pages dic..."
+    - rm -rf public && mv pages public
+    - echo "Copying public dic..."
   artifacts:
     paths:
-      - pages
+      - public
   only:
     - master
