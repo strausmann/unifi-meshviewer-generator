@@ -80,6 +80,9 @@ code_quality:
       codequality: gl-code-quality-report.json
 
 pages:
+  cache:
+    paths:
+      - public
   before_script:
     - echo "skip before_script"
   stage: deploy
@@ -87,9 +90,10 @@ pages:
   tags:
     - dind
   script:
+    - echo "Copying public dic..."
     - rm -rf public && mv pages public
     - cp -R $CI_BUILD_REF_NAME public/$CI_BUILD_REF_NAME
-    - echo "Copying public dic..."
+    - cp public/index.html public/$CI_BUILD_REF_NAME/
     - echo $CI_PAGES_DOMAIN
     - echo $CI_PAGES_URL
   artifacts:
