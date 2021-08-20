@@ -6,13 +6,6 @@ include:
   - template: Code-Quality.gitlab-ci.yml
   - template: SAST.gitlab-ci.yml
 
-default:
-  before_script:
-    - pecl install xdebug && docker-php-ext-enable xdebug
-    - composer self-update
-    - composer install --no-interaction
-    - composer require --dev phpstan/phpstan
-
 test:php7.1:
   stage: test
   image: phpdocker/phpdocker:7.1
@@ -58,6 +51,11 @@ test:php7.4:
   image: phpdocker/phpdocker:7.4
   tags:
     - dind
+  before_script:
+    - pecl install xdebug && docker-php-ext-enable xdebug
+    - composer self-update
+    - composer install --no-interaction
+    - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
     - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov --coverage-html $CI_BUILD_REF_NAME/php74 --coverage-text
