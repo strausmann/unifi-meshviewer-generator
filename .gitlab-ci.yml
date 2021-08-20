@@ -4,7 +4,27 @@ stages:
   
 include:
   - template: Code-Quality.gitlab-ci.yml
-  - template: SAST.gitlab-ci.yml
+
+test:php7.1:
+  stage: test
+  image: phpdocker/phpdocker:7.1
+  tags:
+    - dind
+  before_script:
+    - pecl install xdebug && docker-php-ext-enable xdebug
+    - composer install --no-interaction
+    - composer require --dev phpstan/phpstan
+  script:
+    #- phpcs --standard=PSR2 -nsp src tests
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php71.cov --coverage-html $CI_BUILD_REF_NAME/php71 --coverage-text --log-junit report.xml
+    - vendor/bin/phpstan analyse src tests
+  coverage: /\s+Lines:\s+(\d+\.\d+%)/
+  artifacts:
+    reports:
+      junit: report.xml
+    paths:
+      - $CI_BUILD_REF_NAME
+      - coverage/
 
 test:php7.4:
   stage: test
