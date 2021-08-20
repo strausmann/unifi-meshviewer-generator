@@ -74,7 +74,7 @@ code_quality:
   tags:
     - dind
   allow_failure: true
-  before_script:
+  script:
     - docker info
   artifacts:
     reports:
@@ -84,21 +84,21 @@ phpcs-security-audit-sast:
   stage: test
   tags:
     - dind
-  before_script:
+  script:
     - echo "skip before_script"
 
 eslint-sast:
   stage: test
   tags:
     - dind
-  before_script:
+  script:
     - echo "skip before_script"
 
 secrets-sast:
   stage: test
   tags:
     - dind
-  before_script:
+  script:
     - echo "skip before_script"
 
 pages:
