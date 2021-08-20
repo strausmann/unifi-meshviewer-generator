@@ -52,9 +52,11 @@ test:php7.3:
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php73.cov --coverage-html $CI_BUILD_REF_NAME/php73 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php73.cov --coverage-html $CI_BUILD_REF_NAME/php73 --coverage-text --log-junit report.xml
     - vendor/bin/phpstan analyse src tests
   artifacts:
+    reports:
+      junit: report.xml
     paths:
       - $CI_BUILD_REF_NAME
 
