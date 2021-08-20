@@ -17,9 +17,11 @@ test:php7.1:
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php71.cov --coverage-html $CI_BUILD_REF_NAME/php71 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php71.cov --coverage-html $CI_BUILD_REF_NAME/php71 --coverage-text --log-junit report.xml
     - vendor/bin/phpstan analyse src tests
   artifacts:
+    reports:
+      junit: report.xml
     paths:
       - $CI_BUILD_REF_NAME
       - coverage/
@@ -35,9 +37,11 @@ test:php7.2:
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php72.cov --coverage-html $CI_BUILD_REF_NAME/php72 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php72.cov --coverage-html $CI_BUILD_REF_NAME/php72 --coverage-text --log-junit report.xml
     - vendor/bin/phpstan analyse src tests
   artifacts:
+    reports:
+      junit: report.xml
     paths:
       - $CI_BUILD_REF_NAME
 
@@ -72,10 +76,12 @@ test:php7.4:
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
-    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov --coverage-html $CI_BUILD_REF_NAME/php74 --coverage-text
+    - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php74.cov --coverage-html $CI_BUILD_REF_NAME/php74 --coverage-text --log-junit report.xml
     - vendor/bin/phpstan analyse src tests
     - ls -lah pages
   artifacts:
+    reports:
+      junit: report.xml
     paths:
       - $CI_BUILD_REF_NAME
       - coverage
