@@ -17,9 +17,9 @@
     "require": {
         "php": ">=7.1.1",
         "art-of-wifi/unifi-api-client": "^1.1",
-        "composer/composer": "^2.1",
+        "composer/composer": "^1.0 || ^2.1",
         "ocramius/package-versions": "^1.0",
-        "vlucas/phpdotenv": "^5.3"
+        "vlucas/phpdotenv": "^5.0"
     },
     "require-dev": {
         "filp/whoops": "^2.0",
