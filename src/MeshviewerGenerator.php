@@ -49,7 +49,7 @@ class MeshviewerGenerator
 
     public function outputDebug()
     {
-        echo $this->unifi_pass;
+        //echo $this->unifi_pass;
         echo 'debug';
     }
 
