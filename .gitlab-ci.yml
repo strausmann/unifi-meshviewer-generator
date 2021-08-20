@@ -29,6 +29,10 @@ test:php7.2:
   image: phpdocker/phpdocker:7.2
   tags:
     - dind
+  before_script:
+    - pecl install xdebug && docker-php-ext-enable xdebug
+    - composer install --no-interaction
+    - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
     - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php72.cov --coverage-html $CI_BUILD_REF_NAME/php72 --coverage-text
@@ -42,6 +46,10 @@ test:php7.3:
   image: phpdocker/phpdocker:7.3
   tags:
     - dind
+  before_script:
+    - pecl install xdebug && docker-php-ext-enable xdebug
+    - composer install --no-interaction
+    - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
     - ./vendor/bin/phpunit --configuration phpunit.xml --coverage-php coverage/php73.cov --coverage-html $CI_BUILD_REF_NAME/php73 --coverage-text
