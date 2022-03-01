@@ -6,7 +6,7 @@ ports:
     onOpen: open-browser
 
 tasks:
-  - init: bash ./gitpod-init.sh
+  - init: bash .gitpod-init.sh
   - name: Apache
     command: >
         apachectl start;
