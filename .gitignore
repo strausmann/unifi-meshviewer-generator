@@ -1,7 +1,6 @@
 .env
 .htaccess
 vendor
-composer.lock
 cache/*.json
 devices/*.json
 public/data/*.json
