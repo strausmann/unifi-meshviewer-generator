@@ -1,7 +1,13 @@
 stages:
   - test
   - deploy
-  
+  - scanning
+
+gitguardian scan:
+image: gitguardian/ggshield:latest
+stage: scanning
+script: ggshield scan ci
+
 include:
   - template: Code-Quality.gitlab-ci.yml
 
