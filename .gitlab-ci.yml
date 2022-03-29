@@ -20,7 +20,7 @@ test:php7.1:
     - dind
   before_script:
     - pecl install xdebug && docker-php-ext-enable xdebug
-    - composer install --no-interaction
+    - composer update --no-interaction
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
