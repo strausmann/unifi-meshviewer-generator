@@ -41,7 +41,7 @@ test:php7.2:
     - dind
   before_script:
     - pecl install xdebug && docker-php-ext-enable xdebug
-    - composer install --no-interaction
+    - composer update --no-interaction
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
@@ -61,7 +61,7 @@ test:php7.3:
     - dind
   before_script:
     - pecl install xdebug && docker-php-ext-enable xdebug
-    - composer install --no-interaction
+    - composer update --no-interaction
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
@@ -82,7 +82,7 @@ test:php7.4:
   before_script:
     - pecl install xdebug && docker-php-ext-enable xdebug
     - composer self-update
-    - composer install --no-interaction
+    - composer update --no-interaction
     - composer require --dev phpstan/phpstan
   script:
     #- phpcs --standard=PSR2 -nsp src tests
