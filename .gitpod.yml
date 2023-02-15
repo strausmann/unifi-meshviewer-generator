@@ -6,6 +6,7 @@ ports:
     onOpen: open-browser
 
 tasks:
+  - before: sudo bash .gp/bash/init-ioncube.sh
   - init: bash .gitpod-init.sh
   - name: Apache
     command: >
